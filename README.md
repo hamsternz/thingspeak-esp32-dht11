@@ -7,8 +7,18 @@ This is a simple, minimal ThingSpeak client. It uses
 - ESP-IDF Open SSL library to speak HTTP to the ThinkSpeak API
 - The ESP's deep sleep to save power between readings.
 
-Basic flow
-----------
+Configuring
+-----------
+As with all the ESP-IDF examples, run "make menuconfig".
+
+As well as the normal SDK setup (e.g. Serial port for programming) you 
+also need to set the values under ThingSpeak "ESP DHT11 Configuration"
+
+To do this you will need the ThingSpeak API write key for your channel, 
+and and the WiFi settings.
+
+Basic program flow
+------------------
 - Wake up from deep sleep
 - Schedule the next wakeup for 5 minutes in the future
 - Read sensor
@@ -27,5 +37,5 @@ The code uses the standard ESP logging infrastructure to log all the process to 
 Hardware setup
 --------------
 - Connect the DHT power to Gnd and 3V connections on the ESP32
-- Connect the signal line from the DHT11 to the pin defined in the config file
+- Connect the signal line from the DHT11 to the pin 5
 - If one is not on your DHT11 module, add a sutiable pullup resistor between DATA and 3V connections

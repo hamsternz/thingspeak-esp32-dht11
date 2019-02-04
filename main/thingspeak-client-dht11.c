@@ -1,9 +1,9 @@
 /******************************************************************************
    thingspeak-esp32-dht11.c - A example thingspeak client, logging temperature 
                               and humidity.
-							 
+                             
    Author: Mike Field <hamster@snap.net.nz>
-							 
+                             
    Largely adapted from the ESP-IDF OpenSSL client example
 
    This example code is in the Public Domain (or CC0 licensed, at your option.)
@@ -58,9 +58,9 @@ int humidity = 60;
  *********************************************************************************/
 static void dht11_rmt_rx_init(int gpio_pin, int channel)
 {
-	const int RMT_CLK_DIV            = 80;     /*!< RMT counter clock divider */
-	const int RMT_TICK_10_US         = (80000000/RMT_CLK_DIV/100000);   /*!< RMT counter value for 10 us.(Source clock is APB clock) */
-	const int  rmt_item32_tIMEOUT_US = 1000;   /*!< RMT receiver timeout value(us) */
+    const int RMT_CLK_DIV            = 80;     /*!< RMT counter clock divider */
+    const int RMT_TICK_10_US         = (80000000/RMT_CLK_DIV/100000);   /*!< RMT counter value for 10 us.(Source clock is APB clock) */
+    const int  rmt_item32_tIMEOUT_US = 1000;   /*!< RMT receiver timeout value(us) */
 
     rmt_config_t rmt_rx;
     rmt_rx.gpio_num                      = gpio_pin;
@@ -80,50 +80,50 @@ static void dht11_rmt_rx_init(int gpio_pin, int channel)
  *********************************************************************************/
 static int parse_items(rmt_item32_t* item, int item_num, int *humidity, int *temp_x10)
 {
-	int i=0;
-	unsigned rh = 0, temp = 0, checksum = 0;
+    int i=0;
+    unsigned rh = 0, temp = 0, checksum = 0;
 
-	///////////////////////////////
-	// Check we have enough pulses
-	///////////////////////////////
+    ///////////////////////////////
+    // Check we have enough pulses
+    ///////////////////////////////
     if(item_num < 42)  return 0;
 
-	///////////////////////////////////////
-	// Skip the start of transmission pulse
-	///////////////////////////////////////
-	item++;  
+    ///////////////////////////////////////
+    // Skip the start of transmission pulse
+    ///////////////////////////////////////
+    item++;  
 
-	///////////////////////////////
-    // Extract the humidity data 	
-	///////////////////////////////
-	for(i = 0; i < 16; i++, item++) 
-	    rh = (rh <<1) + (item->duration1 < 35 ? 0 : 1);
+    ///////////////////////////////
+    // Extract the humidity data     
+    ///////////////////////////////
+    for(i = 0; i < 16; i++, item++) 
+        rh = (rh <<1) + (item->duration1 < 35 ? 0 : 1);
 
-	///////////////////////////////
-	// Extract the temperature data
-	///////////////////////////////
-	for(i = 0; i < 16; i++, item++) 
-	    temp = (temp <<1) + (item->duration1 < 35 ? 0 : 1);
+    ///////////////////////////////
+    // Extract the temperature data
+    ///////////////////////////////
+    for(i = 0; i < 16; i++, item++) 
+        temp = (temp <<1) + (item->duration1 < 35 ? 0 : 1);
 
-	///////////////////////////////
-	// Extract the checksum
-	///////////////////////////////
-	for(i = 0; i < 8; i++, item++) 
-	    checksum = (checksum <<1) + (item->duration1 < 35 ? 0 : 1);
-	
-	///////////////////////////////
-	// Check the checksum
-	///////////////////////////////
-	if((((temp>>8) + temp + (rh>>8) + rh)&0xFF) != checksum) {
-		printf("Checksum failure %4X %4X %2X\n", temp, rh, checksum);
+    ///////////////////////////////
+    // Extract the checksum
+    ///////////////////////////////
+    for(i = 0; i < 8; i++, item++) 
+        checksum = (checksum <<1) + (item->duration1 < 35 ? 0 : 1);
+    
+    ///////////////////////////////
+    // Check the checksum
+    ///////////////////////////////
+    if((((temp>>8) + temp + (rh>>8) + rh)&0xFF) != checksum) {
+        printf("Checksum failure %4X %4X %2X\n", temp, rh, checksum);
        return 0;   
     }
 
-	///////////////////////////////
-	// Store into return values
-	///////////////////////////////
+    ///////////////////////////////
+    // Store into return values
+    ///////////////////////////////
     *humidity = rh>>8;
-	*temp_x10 = (temp>>8)*10+(temp&0xFF);
+    *temp_x10 = (temp>>8)*10+(temp&0xFF);
     return 1;
 }
 
@@ -135,58 +135,58 @@ static int dht11_rmt_rx(int gpio_pin, int rmt_channel,
 {
     RingbufHandle_t rb = NULL;
     size_t rx_size = 0;
-	rmt_item32_t* item;
-	int rtn = 0;
-	
-	//get RMT RX ringbuffer
+    rmt_item32_t* item;
+    int rtn = 0;
+    
+    //get RMT RX ringbuffer
     rmt_get_ringbuf_handle(rmt_channel, &rb);
     if(!rb) 
-		return 0;
+        return 0;
 
-	//////////////////////////////////////////////////
-	// Send the 20ms pulse to kick the DHT11 into life
-	//////////////////////////////////////////////////
-	gpio_set_level( gpio_pin, 1 );
-	gpio_set_direction( gpio_pin, GPIO_MODE_OUTPUT );
-	ets_delay_us( 1000 );
-	gpio_set_level( gpio_pin, 0 );
-	ets_delay_us( 20000 );
+    //////////////////////////////////////////////////
+    // Send the 20ms pulse to kick the DHT11 into life
+    //////////////////////////////////////////////////
+    gpio_set_level( gpio_pin, 1 );
+    gpio_set_direction( gpio_pin, GPIO_MODE_OUTPUT );
+    ets_delay_us( 1000 );
+    gpio_set_level( gpio_pin, 0 );
+    ets_delay_us( 20000 );
 
-	////////////////////////////////////////////////
-	// Bring rmt_rx_start & rmt_rx_stop into cache
-	////////////////////////////////////////////////
+    ////////////////////////////////////////////////
+    // Bring rmt_rx_start & rmt_rx_stop into cache
+    ////////////////////////////////////////////////
     rmt_rx_start(rmt_channel, 1);
     rmt_rx_stop(rmt_channel);
 
-	//////////////////////////////////////////////////
-	// Now get the sensor to send the data
-	//////////////////////////////////////////////////
-	gpio_set_level( gpio_pin, 1 );
-	gpio_set_direction( gpio_pin, GPIO_MODE_INPUT );
-	
-	////////////////////////////////////////////////
-	// Start the RMT receiver for the data this time
-	////////////////////////////////////////////////
+    //////////////////////////////////////////////////
+    // Now get the sensor to send the data
+    //////////////////////////////////////////////////
+    gpio_set_level( gpio_pin, 1 );
+    gpio_set_direction( gpio_pin, GPIO_MODE_INPUT );
+    
+    ////////////////////////////////////////////////
+    // Start the RMT receiver for the data this time
+    ////////////////////////////////////////////////
     rmt_rx_start(rmt_channel, 1);
     
-	/////////////////////////////////////////////////
-	// Pull the data from the ring buffer
-	/////////////////////////////////////////////////
-	item = (rmt_item32_t*) xRingbufferReceive(rb, &rx_size, 2);
-	if(item != NULL) {
-		int n;
-		n = rx_size / 4 - 0;
-		//parse data value from ringbuffer.
-		rtn = parse_items(item, n, humidity, temp_x10);
-		//after parsing the data, return spaces to ringbuffer.
-		vRingbufferReturnItem(rb, (void*) item);
-	}
-	/////////////////////////////////////////////////
-	// Stop the RMT Receiver
-	/////////////////////////////////////////////////
+    /////////////////////////////////////////////////
+    // Pull the data from the ring buffer
+    /////////////////////////////////////////////////
+    item = (rmt_item32_t*) xRingbufferReceive(rb, &rx_size, 2);
+    if(item != NULL) {
+        int n;
+        n = rx_size / 4 - 0;
+        //parse data value from ringbuffer.
+        rtn = parse_items(item, n, humidity, temp_x10);
+        //after parsing the data, return spaces to ringbuffer.
+        vRingbufferReturnItem(rb, (void*) item);
+    }
+    /////////////////////////////////////////////////
+    // Stop the RMT Receiver
+    /////////////////////////////////////////////////
     rmt_rx_stop(rmt_channel);
 
-	return rtn;
+    return rtn;
 }
 
 static void update_thingspeak_task(void *p)
@@ -194,24 +194,24 @@ static void update_thingspeak_task(void *p)
     int ret;
     SSL_CTX *ctx;
     SSL *ssl;
-    int socket;
+    int sock;
     struct sockaddr_in sock_addr;
     struct hostent *hp;
     struct ip4_addr *ip4_addr;
     int recv_bytes = 0;
-	int send_bytes;
+    int send_bytes;
     char recv_buf[HTTPS_RECV_BUF_LEN];
-	const char template[] = "GET /update?api_key=" CONFIG_THINGSPEAK_API_WRITE_KEY "&field1=%i.%i&field2=%i.0 HTTP/1.1\r\n"
+    const char template[] = "GET /update?api_key=" CONFIG_THINGSPEAK_API_WRITE_KEY "&field1=%i.%i&field2=%i.0 HTTP/1.1\r\n"
               "Host: hamsterworks.co.nz \r\n"
               "Connection: close\r\n\r\n";
     char send_data[sizeof(template)+20];
-	
-	/* Clamp the inputs to enure we don't blow the buffer out */
-	if(temp_x10 > 999) temp_x10 = 999;
-	if(temp_x10 < -999) temp_x10 = -999;
-	if(humidity > 1000) humidity = 100;
-	if(humidity < 0) humidity = 0;
-	
+    
+    /* Clamp the inputs to enure we don't blow the buffer out */
+    if(temp_x10 > 999) temp_x10 = 999;
+    if(temp_x10 < -999) temp_x10 = -999;
+    if(humidity > 1000) humidity = 100;
+    if(humidity < 0) humidity = 0;
+    
     /* Build the message */
     sprintf(send_data, template, temp_x10/10, temp_x10%10, humidity);
     send_bytes = strlen(send_data);
@@ -238,8 +238,8 @@ static void update_thingspeak_task(void *p)
     ESP_LOGI(TAG, "OK");
 
     ESP_LOGI(TAG, "create socket ......");
-    socket = socket(AF_INET, SOCK_STREAM, 0);
-    if (socket < 0) {
+    sock = socket(AF_INET, SOCK_STREAM, 0);
+    if (sock < 0) {
         ESP_LOGI(TAG, "failed");
         goto failed2;
     }
@@ -250,7 +250,7 @@ static void update_thingspeak_task(void *p)
     sock_addr.sin_family = AF_INET;
     sock_addr.sin_addr.s_addr = 0;
     sock_addr.sin_port = htons(8192);
-    ret = bind(socket, (struct sockaddr*)&sock_addr, sizeof(sock_addr));
+    ret = bind(sock, (struct sockaddr*)&sock_addr, sizeof(sock_addr));
     if (ret) {
         ESP_LOGI(TAG, "failed");
         goto failed3;
@@ -262,7 +262,7 @@ static void update_thingspeak_task(void *p)
     sock_addr.sin_family = AF_INET;
     sock_addr.sin_addr.s_addr = ip4_addr->addr;
     sock_addr.sin_port = htons(443);
-    ret = connect(socket, (struct sockaddr*)&sock_addr, sizeof(sock_addr));
+    ret = connect(sock, (struct sockaddr*)&sock_addr, sizeof(sock_addr));
     if (ret) {
         ESP_LOGI(TAG, "failed");
         goto failed3;
@@ -277,7 +277,7 @@ static void update_thingspeak_task(void *p)
     }
     ESP_LOGI(TAG, "OK");
 
-    SSL_set_fd(ssl, socket);
+    SSL_set_fd(ssl, sock);
 
     ESP_LOGI(TAG, "SSL connected ......");
     ret = SSL_connect(ssl);
@@ -313,8 +313,8 @@ failed4:
     SSL_free(ssl);
     ssl = NULL;
 failed3:
-    close(socket);
-    socket = -1;
+    close(sock);
+    sock = -1;
 failed2:
     SSL_CTX_free(ctx);
     ctx = NULL;
@@ -384,33 +384,33 @@ static void wifi_conn_init(void)
 
 void app_main(void)
 {
-	const int gpio_pin    = GPIO_NUM_5;
-	const int rmt_channel = 0;
+    const int gpio_pin    = CONFIG_DHT11_DATA_PIN;
+    const int rmt_channel = 0;
     const int wakeup_time_sec = 300;
 
     ESP_ERROR_CHECK( nvs_flash_init() );
 
-	// Set up the RMT_RX module
+    // Set up the RMT_RX module
     vTaskDelay(1000 / portTICK_PERIOD_MS);
 
     ESP_LOGI(TAG, "Enabling timer wakeup, %ds\n", wakeup_time_sec);
     esp_sleep_enable_timer_wakeup(wakeup_time_sec  * 1000000);  // Wake up every 5 minutes
     dht11_rmt_rx_init(gpio_pin, rmt_channel);
-	sleep(2);
+    sleep(2);
     if(dht11_rmt_rx(gpio_pin, rmt_channel, &humidity, &temp_x10)) {
        ESP_LOGI(TAG, "Temperature & humidity read %i.%iC & %i%%\n", temp_x10/10, temp_x10%10, humidity);
-	   wifi_conn_init();
+       wifi_conn_init();
     } else {
         ESP_LOGI(TAG, "Sensor failure - retrying\n");
-		sleep(5);
-		if(dht11_rmt_rx(gpio_pin, rmt_channel, &humidity, &temp_x10)) {
-			ESP_LOGI(TAG, "Temperature & humidity read %i.%iC & %i%%\n", temp_x10/10, temp_x10%10, humidity);
-			wifi_conn_init();
-		} else {
-	      ESP_LOGI(TAG, "Sensor failure\n");
-		}
-	}
-	sleep(10);
-	ESP_LOGI(TAG, "Entering deep sleep\n");
-	esp_deep_sleep_start();
+        sleep(5);
+        if(dht11_rmt_rx(gpio_pin, rmt_channel, &humidity, &temp_x10)) {
+            ESP_LOGI(TAG, "Temperature & humidity read %i.%iC & %i%%\n", temp_x10/10, temp_x10%10, humidity);
+            wifi_conn_init();
+        } else {
+          ESP_LOGI(TAG, "Sensor failure\n");
+        }
+    }
+    sleep(10);
+    ESP_LOGI(TAG, "Entering deep sleep\n");
+    esp_deep_sleep_start();
 }

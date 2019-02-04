@@ -6,6 +6,12 @@ config THINGSPEAK_API_WRITE_KEY
     help
         The API Write key for your ThingSpeak channel
 
+config DHT11_DATA_PIN
+    int "DHT11 data pin"
+    default 4
+    help
+        The pin on where the DHT11 data line is connected (eg 4)
+
 config WIFI_SSID
     string "WiFi SSID"
     default "myssid"
